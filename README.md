@@ -26,7 +26,7 @@ pip install aiohttp fontTools
 ## 🚀 クイックスタート
 
 ```python
-from pictsense import Pictsense
+from clinet import Pictsense
 
 pictsense = Pictsense()
 
