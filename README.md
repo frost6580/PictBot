@@ -37,9 +37,7 @@ async def on_ready():
 
 @pictsense.event
 async def on_chat(message):
-    print(f"[{message.user.name}]: {message.text}")
-    if "こんにちは" in message.text:
-        await pictsense.send_chat("こんにちは！私はボットです。")
+    await pictsense.send_chat("こんにちは！私はボットです。")
 
 pictsense.run()
 ```
