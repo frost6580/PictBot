@@ -28,18 +28,28 @@ pip install aiohttp fontTools
 ```python
 from client import Pictsense
 
-pictsense = Pictsense()
+client = Pictsense()
 
-@pictsense.event
+
+@client.event
 async def on_ready():
-    print("ロビーに接続しました。")
-    await pictsense.join_room("部屋名", "ボット名")
+    print("Bot起動成功")
+    await client.create_room()
 
-@pictsense.event
-async def on_chat(message):
-    await pictsense.send_chat("こんにちは！私はボットです。")
 
-pictsense.run()
+@client.event
+async def on_join_request(message):
+    await client.auto_reply_join_request(message)
+
+
+@client.event
+async def on_join(message):
+    await client.send_chat("こんにちは")
+
+
+if __name__ == "__main__":
+    client.run()
+
 ```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
