@@ -87,14 +87,14 @@ class Pictsense:
     async def _handle_error(self, message):
         await self._dispatch_event("on_error", message)
 
-    async def join_room(self):
-        room = await self.lobby.get_room_by_name("りんご")
+    async def join_room(self, name="Created by Python", ownerName="PythonBot"):
+        room = await self.lobby.get_room_by_name(name)
         if room:
             await self.room.connect(room)
-            await self.room.join_room("みかん")
+            await self.room.join_room(ownerName)
 
-    async def create_room(self):
-        room = await self.lobby.create_room(name="りんご", ownerName="みかん")
+    async def create_room(self, name="Created by Python", ownerName="PythonBot"):
+        room = await self.lobby.create_room(name, ownerName)
         if room:
             await self.room.connect(room)
 
