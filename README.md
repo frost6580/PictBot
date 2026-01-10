@@ -34,7 +34,7 @@ client = Pictsense()
 @client.event
 async def on_ready():
     print("Bot起動成功")
-    await client.create_room()
+    await client.create_room("部屋名","オーナー名")
 
 
 @client.event
@@ -49,7 +49,6 @@ async def on_join(message):
 
 if __name__ == "__main__":
     client.run()
-
 ```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
