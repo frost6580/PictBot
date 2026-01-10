@@ -42,6 +42,7 @@ async def on_chat(message):
         await pictsense.send_chat("こんにちは！私はボットです。")
 
 pictsense.run()
+```
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ## 📖 API リファレンス
