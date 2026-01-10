@@ -232,7 +232,7 @@ class LobbyManager:
         penalty="0",
         charButtonEnabled="1",
         imageSearchButtonEnabled="0",
-        hintLevel="0",
+        hintLevel="3",
         maxPlayer="20",
         secretKey="",
         dicList=None,
