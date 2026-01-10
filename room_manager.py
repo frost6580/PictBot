@@ -3,6 +3,7 @@ import aiohttp
 import asyncio
 import json
 from bs4 import BeautifulSoup
+import time
 
 
 class RoomManager:
@@ -17,6 +18,11 @@ class RoomManager:
         self.room = {}
         self.answerList = []
         self.visitorCount = 0
+
+        self._stroke_queue = asyncio.Queue()
+        self._stroke_task = None
+        self._last_stroke_time = 0.0
+        self._stroke_pause_until = 0.0
 
     def _get_domain_from_room(self, room):
         url = room.get("url", None)
@@ -98,6 +104,7 @@ class RoomManager:
             return False
         else:
             asyncio.create_task(self._ws_on_message())
+            self._stroke_task = asyncio.create_task(self._stroke_worker())
             try:
                 await self._ready_event.wait()
             except Exception as e:
@@ -143,7 +150,10 @@ class RoomManager:
                 args = io_data.get("args")
                 match name:
                     case "error push":
-                        await self._handle_error(args[0])
+                        if "短時間に連続した" in args[0]:
+                            self._stroke_pause_until = time.monotonic() + 1.0
+                        else:
+                            await self._handle_error(args[0])
                     case "visitorCount push":
                         await self._update_visitorCount(args[0])
                     case "initRoom push":
@@ -257,6 +267,28 @@ class RoomManager:
                     self.answerList.append(li.get_text(strip=True))
         return self.answerList
 
+    async def _stroke_worker(self):
+        while True:
+            size, color, opacity, path = await self._stroke_queue.get()
+
+            now = time.monotonic()
+            if now < self._stroke_pause_until:
+                await asyncio.sleep(self._stroke_pause_until - now)
+
+            now = time.monotonic()
+            wait = self._last_stroke_time + 0.2 - now
+            if wait > 0:
+                await asyncio.sleep(wait)
+
+            params = {
+                "name": "stroke send",
+                "args": [size, color, opacity, path],
+            }
+            await self._ws_send(self._build_socketio(["5", "", "", params]))
+
+            self._last_stroke_time = time.monotonic()
+            self._stroke_queue.task_done()
+
     async def join_room(self, name):
         params = {"name": "entryRoomRequest send", "args": [name]}
         await self._ws_send(self._build_socketio(["5", "1+", "", params]))
@@ -266,11 +298,7 @@ class RoomManager:
         await self._ws_send(self._build_socketio(["5", "", "", params]))
 
     async def send_stroke(self, size=1.0, color=0, opacity=1.0, path=None):
-        params = {
-            "name": "stroke send",
-            "args": [size, color, opacity, path],
-        }
-        await self._ws_send(self._build_socketio(["5", "", "", params]))
+        await self._stroke_queue.put((size, color, opacity, path))
 
     async def send_clear(self):
         params = {"name": "clear send"}
